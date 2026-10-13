@@ -31,7 +31,9 @@ export default function Home() {
 
   const flash = (m) => { setMsg(m); setTimeout(() => setMsg(""), 3000); };
   const loadProducts = () => api("GET", "/products").then(setProducts).catch((e) => flash(e.message));
-  useEffect(() => { api("GET", "/me").then((d) => setUser(d.user)).catch(() => {}); loadProducts(); }, []);
+  useEffect(() => { api("GET", "/me").then((d) => setUser(d.user)).catch(() => {}); loadProducts(); try { const savedPosts = JSON.parse(localStorage.getItem("cs_community_posts") || "null"); if (Array.isArray(savedPosts) && savedPosts.length) setPosts(savedPosts); } catch {} }, []);
+  useEffect(() => { try { localStorage.setItem("cs_community_posts", JSON.stringify(posts)); } catch {} }, [posts]);
+  useEffect(() => { const close = (e) => { if (e.key === "Escape") setSelectedProduct(null); }; window.addEventListener("keydown", close); return () => window.removeEventListener("keydown", close); }, []);
 
   async function submit(e, path, build, done) {
     e.preventDefault(); setBusy(true);
@@ -59,7 +61,7 @@ export default function Home() {
     <header className="topbar">
       <a className="brand" href="#" onClick={(e) => { e.preventDefault(); setView("home"); }}>
         <span className="brand-mark">CS</span><span><strong>Community</strong> Store</span></a>
-      <nav className="desktop-nav"><button onClick={() => setView("home")}>Marketplace</button><button onClick={() => setView("community")}>Community</button></nav>
+      <nav className="desktop-nav" aria-label="Primary navigation"><button className={view==="home"?"active":""} onClick={() => setView("home")}>Marketplace</button><button className={view==="community"?"active":""} onClick={() => setView("community")}>Community</button></nav>
       <div className="header-actions">
         <button className="btn btn-ghost" onClick={()=>setView("cart")}>Cart ({cartCount})</button>
         <button className="btn btn-secondary" onClick={() => setView(user ? "sell" : "auth")}>+ Sell</button>
@@ -182,6 +184,15 @@ export default function Home() {
         </>
       )}
     </main>
+    <footer className="site-footer">
+      <div className="footer-main">
+        <div className="footer-brand"><a className="brand" href="#" onClick={(e)=>{e.preventDefault();setView("home");window.scrollTo({top:0,behavior:"smooth"});}}><span className="brand-mark">CS</span><span><strong>Community</strong> Store</span></a><p>A campus and local community marketplace for affordable finds, trusted sellers and useful community updates.</p><div className="footer-badges"><span>Community focused</span><span>Mobile first</span><span>Demo checkout</span></div></div>
+        <div className="footer-col"><h4>Marketplace</h4><button onClick={()=>{setView("home");setTimeout(()=>document.getElementById("marketplace")?.scrollIntoView({behavior:"smooth"}),0)}}>Browse products</button><button onClick={()=>setView(user?"sell":"auth")}>Sell an item</button><button onClick={()=>setView("cart")}>Your cart</button></div>
+        <div className="footer-col"><h4>Community</h4><button onClick={()=>setView("community")}>Community bulletin</button><button onClick={()=>setView(user?"community":"auth")}>Share an update</button><button onClick={()=>setView(user?"sell":"auth")}>Local sellers</button></div>
+        <div className="footer-col"><h4>Project</h4><span>Responsive Next.js web portal</span><span>Secure HTTPS deployment</span><span>PayFast / SnapScan demo flow</span></div>
+      </div>
+      <div className="footer-bottom"><span>© 2026 Community Store. Academic prototype.</span><span>No real payment is processed.</span></div>
+    </footer>
     {selectedProduct && <div className="modal-backdrop" onClick={()=>setSelectedProduct(null)}>
       <div className="detail-card" onClick={(e)=>e.stopPropagation()}>
         <button className="modal-x" onClick={()=>setSelectedProduct(null)}>×</button>
