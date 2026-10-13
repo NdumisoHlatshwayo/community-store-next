@@ -16,7 +16,9 @@ export default function Home() {
   const [tab, setTab] = useState("signin");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
-  const [search, setSearch] = useState("");\n  const [category,setCategory]=useState("all");\n  const [sort,setSort]=useState("featured");
+  const [search, setSearch] = useState("");
+  const [category,setCategory]=useState("all");
+  const [sort,setSort]=useState("featured");
 
   const flash = (m) => { setMsg(m); setTimeout(() => setMsg(""), 3000); };
   const loadProducts = () => api("GET", "/products").then(setProducts).catch((e) => flash(e.message));
@@ -29,14 +31,18 @@ export default function Home() {
   }
   const onAuth = (d) => { setUser(d.user); setView("home"); flash(`Welcome, ${d.user.name.split(" ")[0]}!`); };
   const logout = async () => { await api("POST", "/logout"); setUser(null); setView("home"); flash("Signed out"); };
-  let shown = products.filter((p) => (category === "all" || p.category === category) && (`${p.title} ${p.category} ${p.location}`).toLowerCase().includes(search.toLowerCase()));\n  if(sort==="low") shown=[...shown].sort((a,b)=>a.price-b.price);\n  if(sort==="high") shown=[...shown].sort((a,b)=>b.price-a.price);\n  if(sort==="rating") shown=[...shown].sort((a,b)=>(b.rating||0)-(a.rating||0));
+  let shown = products.filter((p) => (category === "all" || p.category === category) && (`${p.title} ${p.category} ${p.location}`).toLowerCase().includes(search.toLowerCase()));
+  if(sort==="low") shown=[...shown].sort((a,b)=>a.price-b.price);
+  if(sort==="high") shown=[...shown].sort((a,b)=>b.price-a.price);
+  if(sort==="rating") shown=[...shown].sort((a,b)=>(b.rating||0)-(a.rating||0));
 
   return (<>
     <div className={"toast" + (msg ? " show" : "")} aria-live="polite">{msg}</div>
     <header className="topbar">
       <a className="brand" href="#" onClick={(e) => { e.preventDefault(); setView("home"); }}>
         <span className="brand-mark">CS</span><span><strong>Community</strong> Store</span></a>
-      <nav className="desktop-nav"><button onClick={() => setView("home")}>Marketplace</button><button onClick={() => location.href="#community"}>Community</button></nav>\n      <div className="header-actions">
+      <nav className="desktop-nav"><button onClick={() => setView("home")}>Marketplace</button><button onClick={() => location.href="#community"}>Community</button></nav>
+      <div className="header-actions">
         <button className="btn btn-secondary" onClick={() => setView(user ? "sell" : "auth")}>+ Sell</button>
         {user ? <><span style={{ fontWeight: 600 }}>{user.name.split(" ")[0]}</span><button className="btn btn-ghost" onClick={logout}>Sign out</button></>
               : <button className="btn btn-ghost" onClick={() => setView("auth")}>Sign in</button>}
@@ -89,8 +95,7 @@ export default function Home() {
       {view === "home" && (
         <section className="content-section" id="marketplace">
           <div className="section-heading"><div><span className="eyebrow">Marketplace</span><h2>Find what you need</h2></div></div>
-          <div className="search-panel"><label className="search-box"><span>⌕</span>
-            <input type="search" placeholder="Search products, categories or locations…" value={search} onChange={(e) => setSearch(e.target.value)} /></label></div>
+          <div className="search-panel"><label className="search-box"><span>⌕</span><input type="search" placeholder="Search products, categories or locations…" value={search} onChange={(e) => setSearch(e.target.value)} /></label><select aria-label="Category" value={category} onChange={(e)=>setCategory(e.target.value)}><option value="all">All categories</option><option>Books</option><option>Electronics</option><option>Study</option><option>Fashion</option><option>Home</option><option>Other</option></select><select aria-label="Sort products" value={sort} onChange={(e)=>setSort(e.target.value)}><option value="featured">Featured</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="rating">Top rated</option></select></div>
           <div className="product-grid">
             {shown.map((p) => (
               <article className="product-card" key={p.id}>
