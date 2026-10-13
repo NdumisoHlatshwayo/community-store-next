@@ -21,7 +21,7 @@ export default function Home() {
   const [sort,setSort]=useState("featured");
   const [selectedProduct,setSelectedProduct]=useState(null);
   const [cart,setCart]=useState([]);
-  const [saved,setSaved]=useState([]);
+  const [saved,setSaved]=useState([]);\n  const [payment,setPayment]=useState("payfast");\n  const [lastOrder,setLastOrder]=useState(null);
 
   const flash = (m) => { setMsg(m); setTimeout(() => setMsg(""), 3000); };
   const loadProducts = () => api("GET", "/products").then(setProducts).catch((e) => flash(e.message));
@@ -36,7 +36,7 @@ export default function Home() {
   const logout = async () => { await api("POST", "/logout"); setUser(null); setView("home"); flash("Signed out"); };
   const toggleSaved = (p) => setSaved((items) => items.some((x)=>x.id===p.id) ? items.filter((x)=>x.id!==p.id) : [...items,p]);
   const addToCart = (p) => { setCart((items)=>{ const hit=items.find((x)=>x.id===p.id); return hit ? items.map((x)=>x.id===p.id?{...x,qty:x.qty+1}:x) : [...items,{...p,qty:1}]; }); flash("Added to cart"); };
-  const cartCount = cart.reduce((n,x)=>n+x.qty,0);
+  const cartCount = cart.reduce((n,x)=>n+x.qty,0);\n  const cartTotal = cart.reduce((n,p)=>n+p.price*p.qty,0);\n  const completeDemoOrder = () => {\n    if (!cart.length) return;\n    const order = { id: `CS-${Date.now().toString().slice(-6)}`, total: cartTotal, payment, items: cartCount };\n    setLastOrder(order); setCart([]); setView("success"); flash("Demo order completed");\n  };
   let shown = products.filter((p) => (category === "all" || p.category === category) && (`${p.title} ${p.category} ${p.location}`).toLowerCase().includes(search.toLowerCase()));
   if(sort==="low") shown=[...shown].sort((a,b)=>a.price-b.price);
   if(sort==="high") shown=[...shown].sort((a,b)=>b.price-a.price);
@@ -105,9 +105,31 @@ export default function Home() {
           <div className="panel">
             {!cart.length ? <div className="empty"><h3>Your cart is empty</h3><p>Add something from the marketplace.</p></div> :
             <>{cart.map((p)=><div className="cart-row" key={p.id}><div><strong>{p.title}</strong><div className="product-meta">{p.seller}</div></div><div className="cart-controls"><button onClick={()=>setCart(cart.map(x=>x.id===p.id?{...x,qty:Math.max(1,x.qty-1)}:x))}>−</button><span>{p.qty}</span><button onClick={()=>setCart(cart.map(x=>x.id===p.id?{...x,qty:x.qty+1}:x))}>+</button><strong>{money(p.price*p.qty)}</strong><button className="remove" onClick={()=>setCart(cart.filter(x=>x.id!==p.id))}>Remove</button></div></div>)}
-            <div className="cart-total"><span>Total</span><strong>{money(cart.reduce((n,p)=>n+p.price*p.qty,0))}</strong></div><p className="form-note">Checkout/payment will be connected in the next tested step.</p></>}
-            <button className="btn btn-secondary" onClick={()=>setView("home")}>Continue shopping</button>
+            <><div className="cart-total"><span>Total</span><strong>{money(cartTotal)}</strong></><div className="form-actions"><button className="btn btn-secondary" onClick={()=>setView("home")}>Continue shopping</button><button className="btn btn-primary" onClick={()=>setView("checkout")}>Checkout</button></div></>}
+            {!cart.length && <button className="btn btn-secondary" onClick={()=>setView("home")}>Continue shopping</button>}
           </div>
+        </section>
+      )}
+
+      {view === "checkout" && (
+        <section className="narrow-view" style={{display:"block"}}>
+          <div className="page-head"><span className="eyebrow">Secure checkout demo</span><h1>Checkout</h1><p>This prototype simulates payment. No real money is charged.</p></div>
+          <div className="checkout-grid">
+            <div className="panel checkout-form">
+              <h3>Payment method</h3>
+              <label className="payment-option"><input type="radio" name="payment" checked={payment==="payfast"} onChange={()=>setPayment("payfast")}/><span><b>PayFast (Demo)</b><small>Simulated payment for project demonstration.</small></span></label>
+              <label className="payment-option"><input type="radio" name="payment" checked={payment==="snapscan"} onChange={()=>setPayment("snapscan")}/><span><b>SnapScan (Demo)</b><small>Simulated QR/mobile payment for project demonstration.</small></span></label>
+              <p className="form-note">No card, banking or payment credentials are collected by this prototype.</p>
+              <div className="form-actions"><button className="btn btn-secondary" onClick={()=>setView("cart")}>Back to cart</button><button className="btn btn-primary" onClick={completeDemoOrder}>Confirm demo payment</button></div>
+            </div>
+            <aside className="panel summary-card"><h3>Order summary</h3>{cart.map(p=><div key={p.id}><span>{p.title} × {p.qty}</span><strong>{money(p.price*p.qty)}</strong></div>)}<div className="summary-total"><span>Total</span><strong>{money(cartTotal)}</strong></div><small>Demonstration checkout only — no real transaction.</small></aside>
+          </div>
+        </section>
+      )}
+
+      {view === "success" && lastOrder && (
+        <section className="narrow-view" style={{display:"block"}}>
+          <div className="panel order-success"><div className="success-check">✓</div><span className="eyebrow">Demo order confirmed</span><h1>Order successful</h1><p>Your simulated order <b>{lastOrder.id}</b> has been created for demonstration purposes.</p><div className="order-receipt"><span>Items</span><strong>{lastOrder.items}</strong><span>Payment</span><strong>{lastOrder.payment==="payfast"?"PayFast (Demo)":"SnapScan (Demo)"}</strong><span>Total</span><strong>{money(lastOrder.total)}</strong></div><p className="form-note">No real payment was processed.</p><button className="btn btn-primary" onClick={()=>setView("home")}>Return to marketplace</button></div>
         </section>
       )}
 
