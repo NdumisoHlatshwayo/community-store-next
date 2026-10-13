@@ -21,7 +21,9 @@ export default function Home() {
   const [sort,setSort]=useState("featured");
   const [selectedProduct,setSelectedProduct]=useState(null);
   const [cart,setCart]=useState([]);
-  const [saved,setSaved]=useState([]);\n  const [payment,setPayment]=useState("payfast");\n  const [lastOrder,setLastOrder]=useState(null);
+  const [saved,setSaved]=useState([]);
+  const [payment,setPayment]=useState("payfast");
+  const [lastOrder,setLastOrder]=useState(null);
 
   const flash = (m) => { setMsg(m); setTimeout(() => setMsg(""), 3000); };
   const loadProducts = () => api("GET", "/products").then(setProducts).catch((e) => flash(e.message));
@@ -36,7 +38,13 @@ export default function Home() {
   const logout = async () => { await api("POST", "/logout"); setUser(null); setView("home"); flash("Signed out"); };
   const toggleSaved = (p) => setSaved((items) => items.some((x)=>x.id===p.id) ? items.filter((x)=>x.id!==p.id) : [...items,p]);
   const addToCart = (p) => { setCart((items)=>{ const hit=items.find((x)=>x.id===p.id); return hit ? items.map((x)=>x.id===p.id?{...x,qty:x.qty+1}:x) : [...items,{...p,qty:1}]; }); flash("Added to cart"); };
-  const cartCount = cart.reduce((n,x)=>n+x.qty,0);\n  const cartTotal = cart.reduce((n,p)=>n+p.price*p.qty,0);\n  const completeDemoOrder = () => {\n    if (!cart.length) return;\n    const order = { id: `CS-${Date.now().toString().slice(-6)}`, total: cartTotal, payment, items: cartCount };\n    setLastOrder(order); setCart([]); setView("success"); flash("Demo order completed");\n  };
+  const cartCount = cart.reduce((n,x)=>n+x.qty,0);
+  const cartTotal = cart.reduce((n,p)=>n+p.price*p.qty,0);
+  const completeDemoOrder = () => {
+    if (!cart.length) return;
+    const order = { id: `CS-${Date.now().toString().slice(-6)}`, total: cartTotal, payment, items: cartCount };
+    setLastOrder(order); setCart([]); setView("success"); flash("Demo order completed");
+  };
   let shown = products.filter((p) => (category === "all" || p.category === category) && (`${p.title} ${p.category} ${p.location}`).toLowerCase().includes(search.toLowerCase()));
   if(sort==="low") shown=[...shown].sort((a,b)=>a.price-b.price);
   if(sort==="high") shown=[...shown].sort((a,b)=>b.price-a.price);
