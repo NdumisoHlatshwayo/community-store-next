@@ -19,6 +19,9 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [category,setCategory]=useState("all");
   const [sort,setSort]=useState("featured");
+  const [selectedProduct,setSelectedProduct]=useState(null);
+  const [cart,setCart]=useState([]);
+  const [saved,setSaved]=useState([]);
 
   const flash = (m) => { setMsg(m); setTimeout(() => setMsg(""), 3000); };
   const loadProducts = () => api("GET", "/products").then(setProducts).catch((e) => flash(e.message));
@@ -31,6 +34,9 @@ export default function Home() {
   }
   const onAuth = (d) => { setUser(d.user); setView("home"); flash(`Welcome, ${d.user.name.split(" ")[0]}!`); };
   const logout = async () => { await api("POST", "/logout"); setUser(null); setView("home"); flash("Signed out"); };
+  const toggleSaved = (p) => setSaved((items) => items.some((x)=>x.id===p.id) ? items.filter((x)=>x.id!==p.id) : [...items,p]);
+  const addToCart = (p) => { setCart((items)=>{ const hit=items.find((x)=>x.id===p.id); return hit ? items.map((x)=>x.id===p.id?{...x,qty:x.qty+1}:x) : [...items,{...p,qty:1}]; }); flash("Added to cart"); };
+  const cartCount = cart.reduce((n,x)=>n+x.qty,0);
   let shown = products.filter((p) => (category === "all" || p.category === category) && (`${p.title} ${p.category} ${p.location}`).toLowerCase().includes(search.toLowerCase()));
   if(sort==="low") shown=[...shown].sort((a,b)=>a.price-b.price);
   if(sort==="high") shown=[...shown].sort((a,b)=>b.price-a.price);
@@ -43,6 +49,7 @@ export default function Home() {
         <span className="brand-mark">CS</span><span><strong>Community</strong> Store</span></a>
       <nav className="desktop-nav"><button onClick={() => setView("home")}>Marketplace</button><button onClick={() => location.href="#community"}>Community</button></nav>
       <div className="header-actions">
+        <button className="btn btn-ghost" onClick={()=>setView("cart")}>Cart ({cartCount})</button>
         <button className="btn btn-secondary" onClick={() => setView(user ? "sell" : "auth")}>+ Sell</button>
         {user ? <><span style={{ fontWeight: 600 }}>{user.name.split(" ")[0]}</span><button className="btn btn-ghost" onClick={logout}>Sign out</button></>
               : <button className="btn btn-ghost" onClick={() => setView("auth")}>Sign in</button>}
@@ -92,14 +99,26 @@ export default function Home() {
         </section>
       )}
 
+      {view === "cart" && (
+        <section className="narrow-view" style={{display:"block"}}>
+          <div className="page-head"><span className="eyebrow">Your basket</span><h1>Cart</h1></div>
+          <div className="panel">
+            {!cart.length ? <div className="empty"><h3>Your cart is empty</h3><p>Add something from the marketplace.</p></div> :
+            <>{cart.map((p)=><div className="cart-row" key={p.id}><div><strong>{p.title}</strong><div className="product-meta">{p.seller}</div></div><div className="cart-controls"><button onClick={()=>setCart(cart.map(x=>x.id===p.id?{...x,qty:Math.max(1,x.qty-1)}:x))}>−</button><span>{p.qty}</span><button onClick={()=>setCart(cart.map(x=>x.id===p.id?{...x,qty:x.qty+1}:x))}>+</button><strong>{money(p.price*p.qty)}</strong><button className="remove" onClick={()=>setCart(cart.filter(x=>x.id!==p.id))}>Remove</button></div></div>)}
+            <div className="cart-total"><span>Total</span><strong>{money(cart.reduce((n,p)=>n+p.price*p.qty,0))}</strong></div><p className="form-note">Checkout/payment will be connected in the next tested step.</p></>}
+            <button className="btn btn-secondary" onClick={()=>setView("home")}>Continue shopping</button>
+          </div>
+        </section>
+      )}
+
       {view === "home" && (
         <section className="content-section" id="marketplace">
           <div className="section-heading"><div><span className="eyebrow">Marketplace</span><h2>Find what you need</h2></div></div>
           <div className="search-panel"><label className="search-box"><span>⌕</span><input type="search" placeholder="Search products, categories or locations…" value={search} onChange={(e) => setSearch(e.target.value)} /></label><select aria-label="Category" value={category} onChange={(e)=>setCategory(e.target.value)}><option value="all">All categories</option><option>Books</option><option>Electronics</option><option>Study</option><option>Fashion</option><option>Home</option><option>Other</option></select><select aria-label="Sort products" value={sort} onChange={(e)=>setSort(e.target.value)}><option value="featured">Featured</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="rating">Top rated</option></select></div>
           <div className="product-grid">
             {shown.map((p) => (
-              <article className="product-card" key={p.id}>
-                <div className="product-img"><img src={p.image || `https://picsum.photos/seed/${p.id}/700/520`} alt={p.title} /><span className="category-tag">{p.category}</span></div>
+              <article className="product-card" key={p.id} onClick={()=>setSelectedProduct(p)} role="button" tabIndex={0} onKeyDown={(e)=>{if(e.key==="Enter")setSelectedProduct(p)}}>
+                <div className="product-img"><img src={p.image || `https://picsum.photos/seed/${p.id}/700/520`} alt={p.title} /><span className="category-tag">{p.category}</span><button className={"favorite-btn"+(saved.some(x=>x.id===p.id)?" active":"")} aria-label="Save item" onClick={(e)=>{e.stopPropagation();toggleSaved(p)}}>{saved.some(x=>x.id===p.id)?"♥":"♡"}</button></div>
                 <div className="product-body"><h3>{p.title}</h3><div className="product-meta">{p.location} · {p.seller}</div>
                   <div className="product-price-row"><div><div className="price">{money(p.price)}</div><span className="rating">★ {p.rating || "New"} {p.reviewCount ? `(${p.reviewCount})` : ""}</span></div></div></div>
               </article>))}
@@ -108,5 +127,18 @@ export default function Home() {
         </section>
       )}
     </main>
+    {selectedProduct && <div className="modal-backdrop" onClick={()=>setSelectedProduct(null)}>
+      <div className="detail-card" onClick={(e)=>e.stopPropagation()}>
+        <button className="modal-x" onClick={()=>setSelectedProduct(null)}>×</button>
+        <img src={selectedProduct.image || `https://picsum.photos/seed/${selectedProduct.id}/900/650`} alt={selectedProduct.title}/>
+        <div className="detail-copy"><span className="eyebrow">{selectedProduct.category}</span><h2>{selectedProduct.title}</h2>
+          <div className="detail-price">{money(selectedProduct.price)}</div>
+          <p>{selectedProduct.description || "A community marketplace listing available from a local seller."}</p>
+          <div className="seller-box"><span><b>Seller</b><br/>{selectedProduct.seller}</span><span><b>Location</b><br/>{selectedProduct.location}</span></div>
+          <div className="rating-panel"><b>★ {selectedProduct.rating || "New"}</b><span>{selectedProduct.reviewCount ? `${selectedProduct.reviewCount} reviews` : "No reviews yet"}</span></div>
+          <div className="detail-actions"><button className="btn btn-secondary" onClick={()=>toggleSaved(selectedProduct)}>{saved.some(x=>x.id===selectedProduct.id)?"♥ Saved":"♡ Save"}</button><button className="btn btn-primary" onClick={()=>addToCart(selectedProduct)}>Add to cart</button></div>
+        </div>
+      </div>
+    </div>}
   </>);
 }
