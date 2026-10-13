@@ -29,3 +29,14 @@
 .saved-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
 .saved-mini{border:1px solid var(--line);border-radius:12px;padding:11px;display:flex;justify-content:space-between;gap:10px;align-items:center}
 @media(max-width:640px){.prototype-note{margin:8px 12px 0;flex-direction:column;gap:2px}.saved-list{grid-template-columns:1fr}}
+
+/* Marketplace interaction layer */
+.product-card[role="button"]{cursor:pointer}
+.modal-backdrop{position:fixed;inset:0;background:rgba(20,25,40,.58);backdrop-filter:blur(4px);z-index:90;display:grid;place-items:center;padding:20px}
+.detail-card{width:min(900px,94vw);max-height:90vh;overflow:auto;background:#fff;border-radius:24px;display:grid;grid-template-columns:1fr 1fr;box-shadow:0 40px 100px rgba(0,0,0,.25);position:relative}
+.detail-card>img{width:100%;height:100%;min-height:480px;object-fit:cover}
+.detail-copy{padding:40px}.detail-copy h2{font-size:34px;margin:10px 0}.detail-price{font-size:28px;font-weight:800}.detail-copy p{color:var(--muted);line-height:1.65}
+.modal-x{position:absolute;right:14px;top:14px;border:0;background:#fff;width:38px;height:38px;border-radius:50%;font-size:25px;box-shadow:0 5px 15px rgba(0,0,0,.12)}
+.rating-panel{display:flex;justify-content:space-between;gap:12px;padding:14px 0;color:#8b6a00}.detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.cart-row{display:flex;justify-content:space-between;gap:20px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}.cart-controls{display:flex;align-items:center;gap:10px}.cart-controls>button:not(.remove){width:30px;height:30px;border:1px solid var(--line);background:#fff;border-radius:8px}.cart-total{display:flex;justify-content:space-between;font-size:20px;padding:22px 0}
+@media(max-width:640px){.detail-card{grid-template-columns:1fr}.detail-card>img{height:260px;min-height:260px}.detail-copy{padding:25px}.detail-copy h2{font-size:28px}.cart-row{align-items:flex-start;flex-direction:column}.cart-controls{width:100%;flex-wrap:wrap}.header-actions>button:first-child{display:block;padding:9px 11px;font-size:12px}}
