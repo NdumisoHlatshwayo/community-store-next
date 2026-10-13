@@ -16,7 +16,7 @@ export default function Home() {
   const [tab, setTab] = useState("signin");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState("");\n  const [category,setCategory]=useState("all");\n  const [sort,setSort]=useState("featured");
 
   const flash = (m) => { setMsg(m); setTimeout(() => setMsg(""), 3000); };
   const loadProducts = () => api("GET", "/products").then(setProducts).catch((e) => flash(e.message));
@@ -29,14 +29,14 @@ export default function Home() {
   }
   const onAuth = (d) => { setUser(d.user); setView("home"); flash(`Welcome, ${d.user.name.split(" ")[0]}!`); };
   const logout = async () => { await api("POST", "/logout"); setUser(null); setView("home"); flash("Signed out"); };
-  const shown = products.filter((p) => `${p.title} ${p.category} ${p.location}`.toLowerCase().includes(search.toLowerCase()));
+  let shown = products.filter((p) => (category === "all" || p.category === category) && (`${p.title} ${p.category} ${p.location}`).toLowerCase().includes(search.toLowerCase()));\n  if(sort==="low") shown=[...shown].sort((a,b)=>a.price-b.price);\n  if(sort==="high") shown=[...shown].sort((a,b)=>b.price-a.price);\n  if(sort==="rating") shown=[...shown].sort((a,b)=>(b.rating||0)-(a.rating||0));
 
   return (<>
     <div className={"toast" + (msg ? " show" : "")} aria-live="polite">{msg}</div>
     <header className="topbar">
       <a className="brand" href="#" onClick={(e) => { e.preventDefault(); setView("home"); }}>
         <span className="brand-mark">CS</span><span><strong>Community</strong> Store</span></a>
-      <div className="header-actions">
+      <nav className="desktop-nav"><button onClick={() => setView("home")}>Marketplace</button><button onClick={() => location.href="#community"}>Community</button></nav>\n      <div className="header-actions">
         <button className="btn btn-secondary" onClick={() => setView(user ? "sell" : "auth")}>+ Sell</button>
         {user ? <><span style={{ fontWeight: 600 }}>{user.name.split(" ")[0]}</span><button className="btn btn-ghost" onClick={logout}>Sign out</button></>
               : <button className="btn btn-ghost" onClick={() => setView("auth")}>Sign in</button>}
@@ -96,7 +96,7 @@ export default function Home() {
               <article className="product-card" key={p.id}>
                 <div className="product-img"><img src={p.image || `https://picsum.photos/seed/${p.id}/700/520`} alt={p.title} /><span className="category-tag">{p.category}</span></div>
                 <div className="product-body"><h3>{p.title}</h3><div className="product-meta">{p.location} · {p.seller}</div>
-                  <div className="product-price-row"><div className="price">{money(p.price)}</div></div></div>
+                  <div className="product-price-row"><div><div className="price">{money(p.price)}</div><span className="rating">★ {p.rating || "New"} {p.reviewCount ? `(${p.reviewCount})` : ""}</span></div></div></div>
               </article>))}
           </div>
           {!shown.length && <div className="empty"><h3>No products found</h3><p>Try a different search.</p></div>}
