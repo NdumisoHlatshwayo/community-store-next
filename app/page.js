@@ -113,7 +113,7 @@ export default function Home() {
           <div className="panel">
             {!cart.length ? <div className="empty"><h3>Your cart is empty</h3><p>Add something from the marketplace.</p></div> :
             <>{cart.map((p)=><div className="cart-row" key={p.id}><div><strong>{p.title}</strong><div className="product-meta">{p.seller}</div></div><div className="cart-controls"><button onClick={()=>setCart(cart.map(x=>x.id===p.id?{...x,qty:Math.max(1,x.qty-1)}:x))}>−</button><span>{p.qty}</span><button onClick={()=>setCart(cart.map(x=>x.id===p.id?{...x,qty:x.qty+1}:x))}>+</button><strong>{money(p.price*p.qty)}</strong><button className="remove" onClick={()=>setCart(cart.filter(x=>x.id!==p.id))}>Remove</button></div></div>)}
-            <><div className="cart-total"><span>Total</span><strong>{money(cartTotal)}</strong></><div className="form-actions"><button className="btn btn-secondary" onClick={()=>setView("home")}>Continue shopping</button><button className="btn btn-primary" onClick={()=>setView("checkout")}>Checkout</button></div></>}
+            <div className="cart-total"><span>Total</span><strong>{money(cartTotal)}</strong></div><div className="form-actions"><button className="btn btn-secondary" onClick={()=>setView("home")}>Continue shopping</button><button className="btn btn-primary" onClick={()=>setView("checkout")}>Checkout</button></div></>}
             {!cart.length && <button className="btn btn-secondary" onClick={()=>setView("home")}>Continue shopping</button>}
           </div>
         </section>
