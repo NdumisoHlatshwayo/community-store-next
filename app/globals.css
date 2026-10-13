@@ -43,3 +43,16 @@
 
 /* Demo checkout and confirmation */
 .order-success{max-width:620px;margin:30px auto;text-align:center;padding:40px}.order-success h1{font-size:38px;margin:12px 0}.order-success>p{color:var(--muted);line-height:1.6}.order-receipt{display:grid;grid-template-columns:1fr auto;gap:12px;text-align:left;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:20px 0;margin:24px 0}.order-receipt span{color:var(--muted)}
+
+
+/* Final polish: active navigation, footer and responsive finishing */
+.desktop-nav button.active{color:var(--primary);background:#f5f2ff;border-radius:10px}
+.site-footer{border-top:1px solid var(--line);background:#fafbfe;padding:0 24px}
+.footer-main{max-width:1180px;margin:auto;padding:54px 0 38px;display:grid;grid-template-columns:1.8fr repeat(3,1fr);gap:46px}
+.footer-brand p{max-width:390px;color:var(--muted);line-height:1.7;font-size:13px;margin:18px 0}
+.footer-badges{display:flex;flex-wrap:wrap;gap:7px}.footer-badges span{font-size:10px;font-weight:700;color:var(--primary);background:#f0edff;padding:7px 9px;border-radius:99px}
+.footer-col{display:flex;flex-direction:column;align-items:flex-start;gap:11px}.footer-col h4{margin:2px 0 7px;font-size:13px}.footer-col button{border:0;background:none;padding:0;color:var(--muted);font-size:12px;text-align:left}.footer-col button:hover{color:var(--primary)}.footer-col span{color:var(--muted);font-size:12px;line-height:1.45}
+.footer-bottom{max-width:1180px;margin:auto;border-top:1px solid var(--line);padding:18px 0 24px;display:flex;justify-content:space-between;gap:18px;color:var(--muted);font-size:11px}
+.community-signin{display:flex;align-items:center;justify-content:space-between;gap:20px}.community-signin p{margin:0;color:var(--muted)}
+@media(max-width:900px){.footer-main{grid-template-columns:1.5fr 1fr 1fr;gap:32px}.footer-main .footer-col:last-child{grid-column:1/-1}.footer-bottom{flex-direction:column;gap:5px}}
+@media(max-width:640px){.site-footer{padding:0 16px 78px}.footer-main{grid-template-columns:1fr 1fr;padding:36px 0 28px;gap:28px 18px}.footer-brand{grid-column:1/-1}.footer-main .footer-col:last-child{grid-column:1/-1}.footer-bottom{padding:16px 0 20px}.prototype-note{position:relative;z-index:1}.community-signin{align-items:flex-start;flex-direction:column}}
