@@ -24,6 +24,10 @@ export default function Home() {
   const [saved,setSaved]=useState([]);
   const [payment,setPayment]=useState("payfast");
   const [lastOrder,setLastOrder]=useState(null);
+  const [posts,setPosts]=useState([
+    {id:1,type:"Campus",title:"Textbook exchange this Friday",body:"Bring books you no longer need and swap with other students at the student centre.",author:"Community Store",date:"This week"},
+    {id:2,type:"Notice",title:"Local sellers welcome",body:"Students, residents and verified vendors can share useful marketplace updates with the community.",author:"Community Store",date:"Community bulletin"}
+  ]);
 
   const flash = (m) => { setMsg(m); setTimeout(() => setMsg(""), 3000); };
   const loadProducts = () => api("GET", "/products").then(setProducts).catch((e) => flash(e.message));
@@ -55,7 +59,7 @@ export default function Home() {
     <header className="topbar">
       <a className="brand" href="#" onClick={(e) => { e.preventDefault(); setView("home"); }}>
         <span className="brand-mark">CS</span><span><strong>Community</strong> Store</span></a>
-      <nav className="desktop-nav"><button onClick={() => setView("home")}>Marketplace</button><button onClick={() => location.href="#community"}>Community</button></nav>
+      <nav className="desktop-nav"><button onClick={() => setView("home")}>Marketplace</button><button onClick={() => setView("community")}>Community</button></nav>
       <div className="header-actions">
         <button className="btn btn-ghost" onClick={()=>setView("cart")}>Cart ({cartCount})</button>
         <button className="btn btn-secondary" onClick={() => setView(user ? "sell" : "auth")}>+ Sell</button>
@@ -141,7 +145,27 @@ export default function Home() {
         </section>
       )}
 
+      {view === "community" && (
+        <section className="narrow-view" style={{display:"block"}}>
+          <div className="page-head split"><div><span className="eyebrow">Community bulletin</span><h1>Community</h1><p>Share useful notices, events and marketplace updates with the campus and local community.</p></div></div>
+          {user && <form className="panel form-grid" onSubmit={(e)=>{e.preventDefault();const f=new FormData(e.target);setPosts([{id:Date.now(),type:f.get("type"),title:f.get("title"),body:f.get("body"),author:user.name,date:"Just now"},...posts]);e.target.reset();flash("Community post published");}}>
+            <label>Post type<select name="type"><option>Notice</option><option>Campus</option><option>Event</option><option>Marketplace</option></select></label>
+            <label>Title<input name="title" required placeholder="What would you like to share?" /></label>
+            <label className="span-2">Message<textarea name="body" rows={4} required placeholder="Write your community update…" /></label>
+            <div className="span-2 form-actions"><button className="btn btn-primary">Publish post</button></div>
+          </form>}
+          {!user && <div className="panel community-signin"><p>Sign in to publish a community post.</p><button className="btn btn-secondary" onClick={()=>setView("auth")}>Sign in</button></div>}
+          <div className="bulletin-grid">{posts.map(post=><article className="bulletin-card" key={post.id}><span className="post-type">{post.type}</span><h3>{post.title}</h3><p>{post.body}</p><div className="post-footer"><span>{post.author}</span><span>{post.date}</span></div></article>)}</div>
+        </section>
+      )}
+
       {view === "home" && (
+        <>
+        <div className="prototype-note"><strong>Community Store prototype</strong><span>Responsive Next.js marketplace · demo checkout only</span></div>
+        <section className="hero">
+          <div className="hero-copy"><span className="eyebrow">Campus + local community marketplace</span><h1>Buy local. Sell simply.<br/><span>Build community.</span></h1><p>Discover affordable products and trusted sellers around your campus and local community.</p><div className="hero-actions"><button className="btn btn-primary" onClick={()=>document.getElementById("marketplace")?.scrollIntoView({behavior:"smooth"})}>Shop marketplace</button><button className="btn btn-secondary" onClick={()=>setView(user?"sell":"auth")}>+ Sell an item</button></div><div className="trust-row"><span>✓ Community focused</span><span>✓ Mobile first</span><span>✓ Secure checkout demo</span></div></div>
+          <div className="hero-card"><div className="hero-card-top"><span>New Collection</span><span className="pill">Featured</span></div><h2>Fresh finds,<br/>better prices.</h2><p>Explore books, tech, fashion and everyday essentials from your community.</p><button className="btn btn-light" onClick={()=>document.getElementById("marketplace")?.scrollIntoView({behavior:"smooth"})}>Browse now →</button></div>
+        </section>
         <section className="content-section" id="marketplace">
           <div className="section-heading"><div><span className="eyebrow">Marketplace</span><h2>Find what you need</h2></div></div>
           <div className="search-panel"><label className="search-box"><span>⌕</span><input type="search" placeholder="Search products, categories or locations…" value={search} onChange={(e) => setSearch(e.target.value)} /></label><select aria-label="Category" value={category} onChange={(e)=>setCategory(e.target.value)}><option value="all">All categories</option><option>Books</option><option>Electronics</option><option>Study</option><option>Fashion</option><option>Home</option><option>Other</option></select><select aria-label="Sort products" value={sort} onChange={(e)=>setSort(e.target.value)}><option value="featured">Featured</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="rating">Top rated</option></select></div>
@@ -155,6 +179,7 @@ export default function Home() {
           </div>
           {!shown.length && <div className="empty"><h3>No products found</h3><p>Try a different search.</p></div>}
         </section>
+        </>
       )}
     </main>
     {selectedProduct && <div className="modal-backdrop" onClick={()=>setSelectedProduct(null)}>
